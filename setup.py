@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='blender_file',
-    version='0.1',
+    version='0.1.1',
     description='Blender File',
     url='https://github.com/dfelinto/blender-file/',
     author='At Mind B.V. - Jeroen Bakker, Blender Foundation - Campbell Barton',
