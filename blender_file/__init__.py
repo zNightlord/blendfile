@@ -101,7 +101,7 @@ class BlendFile:
         "block_header_struct",
         # BlendFileBlock
         "blocks",
-        # [DNAStruct, ...]
+        # [DNAStruct, Ellipsis]
         "structs",
         # dict {b'StructName': sdna_index}
         # (where the index is an index into 'structs')
@@ -356,7 +356,7 @@ class BlendFileBlock:
         self.refine_type_from_index(self.file.sdna_index_from_id[dna_type_id])
 
     def get_file_offset(self, path,
-            default=...,
+            default=Ellipsis,
             sdna_index_refine=None,
             base_index=0,
             ):
@@ -383,7 +383,7 @@ class BlendFileBlock:
         return (self.file.handle.tell(), field.dna_name.array_size)
 
     def get(self, path,
-            default=...,
+            default=Ellipsis,
             sdna_index_refine=None,
             use_nil=True, use_str=True,
             base_index=0,
@@ -408,7 +408,7 @@ class BlendFileBlock:
                 )
 
     def get_recursive_iter(self, path, path_root=b"",
-                           default=...,
+                           default=Ellipsis,
                            sdna_index_refine=None,
                            use_nil=True, use_str=True,
                            base_index=0,
@@ -430,12 +430,14 @@ class BlendFileBlock:
             else:
                 struct = self.file.structs[struct_index]
                 for f in struct.fields:
-                    yield from self.get_recursive_iter(
-                            f.dna_name.name_only, path_full, default, None, use_nil, use_str, 0)
+                    for y in self.get_recursive_iter(
+                            f.dna_name.name_only, path_full, default, None, use_nil, use_str, 0):
+                        yield y
 
     def items_recursive_iter(self):
         for k in self.keys():
-            yield from self.get_recursive_iter(k, use_str=False)
+            for y in self.get_recursive_iter(k, use_str=False):
+                yield y
 
     def get_data_hash(self):
         """
@@ -476,7 +478,7 @@ class BlendFileBlock:
     #   avoid inline pointer casting
     def get_pointer(
             self, path,
-            default=...,
+            default=Ellipsis,
             sdna_index_refine=None,
             base_index=0,
             ):
@@ -737,12 +739,12 @@ class DNAStruct:
                 return field.dna_type.field_from_path(header, handle, name_tail)
 
     def field_get(self, header, handle, path,
-                  default=...,
+                  default=Ellipsis,
                   use_nil=True, use_str=True,
                   ):
         field = self.field_from_path(header, handle, path)
         if field is None:
-            if default is not ...:
+            if default is not Ellipsis:
                 return default
             else:
                 raise KeyError("%r not found in %r (%r)" %
