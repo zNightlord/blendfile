@@ -123,6 +123,8 @@ class BlendFile:
         self.block_header_struct = self.header.create_block_header_struct()
         self.blocks = []
         self.code_index = {}
+        self.structs = []
+        self.sdna_index_from_id = {}
 
         block = BlendFileBlock(handle, self)
         while block.code != b'ENDB':
@@ -139,6 +141,9 @@ class BlendFile:
             block = BlendFileBlock(handle, self)
         self.is_modified = False
         self.blocks.append(block)
+
+        if not self.structs:
+            raise Exception("No DNA1 block in file, this is not a valid .blend file!")
 
         # cache (could lazy init, incase we never use?)
         self.block_from_offset = {block.addr_old: block for block in self.blocks if block.code != b'ENDB'}
@@ -297,7 +302,7 @@ class BlendFileBlock:
         return ("<%s.%s (%s), size=%d at %s>" %
                 # fields=[%s]
                 (self.__class__.__name__,
-                 self.dna_type.dna_type_id.decode('ascii'),
+                 self.dna_type_name,
                  self.code.decode(),
                  self.size,
                  # b", ".join(f.dna_name.name_only for f in self.dna_type.fields).decode('ascii'),
@@ -311,12 +316,21 @@ class BlendFileBlock:
         self.user_data = None
 
         data = handle.read(bfile.block_header_struct.size)
+
+        if len(data) != bfile.block_header_struct.size:
+            print("WARNING! Blend file seems to be badly truncated!")
+            self.code = b'ENDB'
+            self.size = 0
+            self.addr_old = 0
+            self.sdna_index = 0
+            self.count = 0
+            self.file_offset = 0
+            return
         # header size can be 8, 20, or 24 bytes long
         # 8: old blend files ENDB block (exception)
         # 20: normal headers 32 bit platform
         # 24: normal headers 64 bit platform
         if len(data) > 15:
-
             blockheader = bfile.block_header_struct.unpack(data)
             self.code = blockheader[0].partition(b'\0')[0]
             if self.code != b'ENDB':
@@ -344,6 +358,10 @@ class BlendFileBlock:
     @property
     def dna_type(self):
         return self.file.structs[self.sdna_index]
+
+    @property
+    def dna_type_name(self):
+        return self.dna_type.dna_type_id.decode('ascii')
 
     def refine_type_from_index(self, sdna_index_next):
         assert(type(sdna_index_next) is int)
@@ -752,6 +770,7 @@ class DNAStruct:
 
         dna_type = field.dna_type
         dna_name = field.dna_name
+        dna_size = field.dna_size
 
         if dna_name.is_pointer:
             return DNA_IO.read_pointer(handle, header)
@@ -772,6 +791,9 @@ class DNAStruct:
                 return [DNA_IO.read_float(handle, header) for i in range(dna_name.array_size)]
             return DNA_IO.read_float(handle, header)
         elif dna_type.dna_type_id == b'char':
+            if dna_size == 1:
+                # Single char, assume it's bitflag or int value, and not a string/bytes data...
+                return DNA_IO.read_char(handle, header)
             if use_str:
                 if use_nil:
                     return DNA_IO.read_string0(handle, dna_name.array_size)
@@ -865,6 +887,13 @@ class DNA_IO:
     def read_data0(data):
         add = data.find(b'\0')
         return data[:add]
+
+    UCHAR = struct.Struct(b'<b'), struct.Struct(b'>b')
+
+    @staticmethod
+    def read_char(handle, fileheader):
+        st = DNA_IO.UCHAR[fileheader.endian_index]
+        return st.unpack(handle.read(st.size))[0]
 
     USHORT = struct.Struct(b'<H'), struct.Struct(b'>H')
 
