@@ -9,5 +9,8 @@ setup(
     author_email='foundation@blender.org',
     license='GNU General Public License v2 or later (GPLv2+)',
     packages=['blender_file'],
+    tests_require=[
+        'pytest',
+    ],
     zip_safe=False,
 )
