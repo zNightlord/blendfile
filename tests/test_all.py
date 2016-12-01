@@ -2,7 +2,7 @@
 """Unitests for blender_format"""
 
 import os
-import blender_file
+import blendfile
 
 # Utils
 
@@ -29,7 +29,7 @@ def views_iter(scene):
 
 def query_main_scene(filepath, callbacks):
     """Return the equivalent to bpy.context.scene"""
-    with blender_file.open_blend(filepath) as blend:
+    with blendfile.open_blend(filepath) as blend:
         # There is no bpy.context.scene, we get it from the main window
         window_manager = [block for block in blend.blocks if block.code == b'WM'][0]
         window = window_manager.get_pointer(b'winactive')

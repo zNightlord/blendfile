@@ -6,7 +6,7 @@ Basic usage can be grasped from the test suit.
 
 Import the module in your script and you are good to go:
 
-   >>> import blender_file
+   >>> import blendfile
 
 This module supports both Python2.x and Python3.x at the moment.
 Python 2.x support may be dropped in the future.
