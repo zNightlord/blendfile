@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='blender-file',
@@ -8,7 +8,7 @@ setup(
     author='At Mind B.V. - Jeroen Bakker, Blender Foundation - Campbell Barton',
     author_email='foundation@blender.org',
     license='GNU General Public License v2 or later (GPLv2+)',
-    packages=setuptools.find_packages('.', exclude=['tests']),
+    packages=find_packages('.', exclude=['tests']),
     tests_require=[
         'pytest',
     ],
