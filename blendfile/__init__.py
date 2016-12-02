@@ -101,7 +101,7 @@ class BlendFile:
         "block_header_struct",
         # BlendFileBlock
         "blocks",
-        # [DNAStruct, Ellipsis]
+        # [DNAStruct, ...]
         "structs",
         # dict {b'StructName': sdna_index}
         # (where the index is an index into 'structs')
@@ -448,12 +448,14 @@ class BlendFileBlock:
             else:
                 struct = self.file.structs[struct_index]
                 for f in struct.fields:
+                    # Use "yield from" when Python2 is dropped
                     for y in self.get_recursive_iter(
                             f.dna_name.name_only, path_full, default, None, use_nil, use_str, 0):
                         yield y
 
     def items_recursive_iter(self):
         for k in self.keys():
+            # Use "yield from" when Python2 is dropped
             for y in self.get_recursive_iter(k, use_str=False):
                 yield y
 
