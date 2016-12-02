@@ -15,5 +15,5 @@ Python 2.x support may be dropped in the future.
 
 To run the tests just do:
 
-   >>> pip install pytest
-   >>> py.test tests/
+   >>> pip install tox
+   >>> tox
