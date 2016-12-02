@@ -10,7 +10,8 @@ setup(
     license='GNU General Public License v2 or later (GPLv2+)',
     packages=find_packages('.', exclude=['tests']),
     tests_require=[
-        'pytest',
+        'pytest>=2.9.1',
+        'pytest-cov>=2.2.1',
     ],
-    zip_safe=False,
+    zip_safe=True,
 )
