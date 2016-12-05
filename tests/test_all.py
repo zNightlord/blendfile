@@ -12,19 +12,20 @@ def get_sample_filepath(filepath):
     return os.path.join(dir_path, 'samples', filepath)
 
 
+def listbase_iter(data, struct, listbase):
+    element = data.get_pointer((struct, listbase, b'first'))
+    while element is not None:
+        yield element
+        element = element.get_pointer(b'next')
+
+
 def idprop_group_iter(idprops, ):
-    itor = idprops.get_pointer((b'data', b'group', b'first'))
-    while itor is not None:
-        yield itor
-        itor = itor.get_pointer(b'next')
+    return listbase_iter(idprops, b'data', b'group')
 
 
 def views_iter(scene):
     """Return an iterator for all views of scene"""
-    view = scene.get_pointer((b'r', b'views', b'first'))
-    while view is not None:
-        yield view
-        view = view.get_pointer(b'next')
+    return listbase_iter(scene, b'r', b'views')
 
 
 def query_main_scene(filepath, callbacks):
