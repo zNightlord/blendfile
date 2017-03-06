@@ -55,6 +55,28 @@ def test_scene_name():
     assert scene_name == u'SC\u733f\u306e\u30b7\u30fc\u30f3'
 
 
+def test_scene_frames():
+    def get_frame_start(scene):
+        return scene.get((b'r', b'sfra'))
+
+    def get_frame_end(scene):
+        return scene.get((b'r', b'efra'))
+
+    def get_frame_current(scene):
+        return scene.get((b'r', b'cfra'))
+
+    filepath = get_sample_filepath("monkeys.blend")
+    frame_start, frame_end, frame_current = query_main_scene(filepath, [
+        get_frame_start,
+        get_frame_end,
+        get_frame_current,
+        ])
+
+    assert frame_start == 1
+    assert frame_end == 250
+    assert frame_current == 101
+
+
 def test_scene_resolution():
     def get_resolution_x(scene):
         return scene.get((b'r', b'xsch'))
